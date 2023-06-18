@@ -9,7 +9,7 @@ const authMiddleware = require('../middleware/auth');
 // User registration route
 router.post('/register', async (req, res) => {
   try {
-    const { username, name,  email, password } = req.body;
+    const { username, name,  email, password, role, id } = req.body;
 
     // Check if the username or email already exists in the database
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -22,11 +22,12 @@ router.post('/register', async (req, res) => {
 
     // Create a new user with the default role of "student"
     const user = new User({
+      id,
       username,
       name,
       email,
       password: hashedPassword,
-      role: 'student' // Default role is "student"
+      role
     });
 
     // Save the user to the database

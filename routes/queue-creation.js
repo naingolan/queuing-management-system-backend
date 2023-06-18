@@ -4,13 +4,11 @@ const authMiddleware = require('../middleware/auth');
 const Queue = require('../models/queue');
 
 // Create a new queue
-router.post('/queues', authMiddleware, async (req, res) => {
+router.post('/add', authMiddleware("staff"), async (req, res) => {
   try {
-    // Check if the user has the "staff" role
     if (req.user.role !== 'staff') {
       return res.status(403).json({ error: 'Only staff members can create queues' });
     }
-
     // Extract the necessary data from the request body
     const { name, description } = req.body;
 
@@ -34,7 +32,7 @@ router.post('/queues', authMiddleware, async (req, res) => {
 });
 
 // Delete a queue
-router.delete('/queues/:id', authMiddleware, async (req, res) => {
+router.delete('/delete/:id', authMiddleware, async (req, res) => {
   try {
     // Check if the user has the "staff" role
     if (req.user.role !== 'staff') {
@@ -56,7 +54,7 @@ router.delete('/queues/:id', authMiddleware, async (req, res) => {
 });
 
 // Update a queue
-router.put('/queues/:id', authMiddleware, async (req, res) => {
+router.put('/update/:id', authMiddleware, async (req, res) => {
   try {
     // Check if the user has the "staff" role
     if (req.user.role !== 'staff') {
@@ -74,6 +72,19 @@ router.put('/queues/:id', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Error updating queue:', error);
     res.status(500).json({ error: 'An error occurred while updating the queue' });
+  }
+});
+
+//Get all queues 
+router.get('/all', async (req, res) => {
+  try {
+    // Retrieve all queues from the database
+    const queues = await Queue.find();
+
+    res.status(200).json(queues);
+  } catch (error) {
+    console.error('Error retrieving queues:', error);
+    res.status(500).json({ error: 'An error occurred while retrieving the queues' });
   }
 });
 

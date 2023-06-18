@@ -47,4 +47,8 @@ const queueSchema = new mongoose.Schema({
       default: 'specified'
     }
   });
+
+const Queue = mongoose.model('Queue', queueSchema);
+module.exports = Queue;
+
   

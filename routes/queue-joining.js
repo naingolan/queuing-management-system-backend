@@ -4,7 +4,7 @@ const authMiddleware = require('../middleware/auth');
 const Queue = require('../models/queue');
 
 // Student joins a queue
-router.post('/queues/:id/join', authMiddleware, async (req, res) => {
+router.post('/add/:id/join',authMiddleware('student'), async (req, res) => {
   try {
     // Check if the user has the "student" role
     if (req.user.role !== 'student') {
@@ -12,14 +12,15 @@ router.post('/queues/:id/join', authMiddleware, async (req, res) => {
     }
 
     // Find the queue by ID
-    const queue = await Queue.findById(req.params.id);
+    const queue = await Queue.findById(req.params._id);
+    console.log("you hae find me");
 
     if (!queue) {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
     // Check if the student has already joined the queue
-    const isJoined = queue.students.some(student => student.studentId.toString() === req.user.userId);
+    const isJoined = queue.students.some(student => student.studentId.toString() === req.user.id);
 
     if (isJoined) {
       return res.status(400).json({ error: 'You have already joined this queue' });
@@ -27,7 +28,7 @@ router.post('/queues/:id/join', authMiddleware, async (req, res) => {
 
     // Add the student to the queue
     queue.students.push({
-      studentId: req.user.userId,
+      studentId: req.user.id,
       name: req.user.name,
       joiningTime: new Date(),
       coupon: Math.floor(1000 + Math.random() * 9000) // Generate a random coupon
