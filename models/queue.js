@@ -34,7 +34,7 @@ const queueSchema = new mongoose.Schema({
       },
       course: {
         type: String,
-        required: true
+        required: false
       },
       coupon: {
         type: String,

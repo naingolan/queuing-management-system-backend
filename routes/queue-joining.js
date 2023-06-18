@@ -2,17 +2,18 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
 const Queue = require('../models/queue');
+const User = require('../models/user');
 
 // Student joins a queue
-router.post('/add/:id/join',authMiddleware('student'), async (req, res) => {
+router.post('/add/:id/join', authMiddleware("student"),async (req, res) => {
   try {
-    // Check if the user has the "student" role
+    //Check if the user has the "student" role
     if (req.user.role !== 'student') {
       return res.status(403).json({ error: 'Only students can join a queue' });
     }
 
     // Find the queue by ID
-    const queue = await Queue.findById(req.params._id);
+    const queue = await Queue.findById(req.params.id);
     console.log("you hae find me");
 
     if (!queue) {
@@ -20,16 +21,20 @@ router.post('/add/:id/join',authMiddleware('student'), async (req, res) => {
     }
 
     // Check if the student has already joined the queue
-    const isJoined = queue.students.some(student => student.studentId.toString() === req.user.id);
+    console.log(req.user);
+    const isJoined = queue.students.some(student => student.studentId.toString() === req.user.userId);
 
     if (isJoined) {
       return res.status(400).json({ error: 'You have already joined this queue' });
     }
+    console.log(req.user.name);
+    const userCredentials = await User.findById(req.user.userId);
+    console.log(userCredentials);
 
     // Add the student to the queue
     queue.students.push({
-      studentId: req.user.id,
-      name: req.user.name,
+      studentId: req.user.userId,
+      name: userCredentials.name,
       joiningTime: new Date(),
       coupon: Math.floor(1000 + Math.random() * 9000) // Generate a random coupon
     });
@@ -45,7 +50,7 @@ router.post('/add/:id/join',authMiddleware('student'), async (req, res) => {
 });
 
 // Student leaves a queue
-router.post('/queues/:id/leave', authMiddleware, async (req, res) => {
+router.post('/leave/:id', authMiddleware("student"), async (req, res) => {
   try {
     // Check if the user has the "student" role
     if (req.user.role !== 'student') {
@@ -102,12 +107,8 @@ router.put('/queues/:id', authMiddleware, async (req, res) => {
 });
 
 // Get a list of queues
-router.get('/queues', authMiddleware, async (req, res) => {
+router.get('/queues',  async (req, res) => {
   try {
-    // Check if the user has the "student" role
-    if (req.user.role !== 'student') {
-      return res.status(403).json({ error: 'Only students can get the list of queues' });
-    }
 
     // Find all queues
     const queues = await Queue.find();

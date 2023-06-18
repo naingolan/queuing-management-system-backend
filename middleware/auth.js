@@ -16,12 +16,14 @@ const authMiddleware = (requiredRole) => (req, res, next) => {
     const decoded = jwt.verify(token, config.jwtSecret);
 
     // Check if the decoded user has the required role
+    console.log(decoded.role);
     if (decoded.role !== requiredRole) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
     // Set the decoded payload in the request object
     req.user = decoded;
+    console.log(req.user);
 
     // Proceed to the next middleware or route handler
     next();

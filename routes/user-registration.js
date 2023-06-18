@@ -9,20 +9,19 @@ const authMiddleware = require('../middleware/auth');
 // User registration route
 router.post('/register', async (req, res) => {
   try {
-    const { username, name,  email, password, role, id } = req.body;
+    const { username, name,  email, password, role } = req.body;
 
     // Check if the username or email already exists in the database
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
       return res.status(400).json({ error: 'Username or email already exists' });
     }
-
+    console.log(req.body);
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user with the default role of "student"
     const user = new User({
-      id,
       username,
       name,
       email,
@@ -40,36 +39,45 @@ router.post('/register', async (req, res) => {
   }
 });
 router.post('/login', async (req, res) => {
-    const { identifier, password } = req.body;
-  
-    try {
-      // Find the user by email, username, or studentId
-      const user = await User.findOne({
-        $or: [
-          { email: identifier },
-          { username: identifier },
-          { studentId: identifier }
-        ]
-      });
-  
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-  
-      // Compare the provided password with the user's hashed password
-      const passwordMatch = await bcrypt.compare(password, user.password);
-  
-      if (!passwordMatch) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-  
-      // Generate a JWT token and send it to the client
-      const token = jwt.sign({ userId: user._id, role: user.role }, config.jwtSecret);
-  
-      return res.status(200).json({ token });
-    } catch (error) {
-      console.error('Error during login:', error);
-      return res.status(500).json({ error: 'An error occurred during login' });
+  const { username, email, password } = req.body;
+
+  // Check if username or email is provided
+  if (!username && !email) {
+    return res.status(400).json({ error: 'Please provide a username or email' });
+  }
+
+  try {
+    let user;
+
+    // Check if username is provided and find the user by username
+    if (username) {
+      user = await User.findOne({ username });
     }
-  });
+
+    // If user is not found and email is provided, find the user by email
+    if (!user && email) {
+      user = await User.findOne({ email });
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Compare the provided password with the user's hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate a JWT token and send it to the client
+    console.log(user.role)
+    const token = jwt.sign({ userId: user._id, role: user.role }, config.jwtSecret);
+
+    return res.status(200).json({ token });
+  } catch (error) {
+    console.error('Error during login:', error);
+    return res.status(500).json({ error: 'An error occurred during login' });
+  }
+});
 module.exports = router;

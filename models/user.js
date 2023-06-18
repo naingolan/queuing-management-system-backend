@@ -4,11 +4,9 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true
   },
-  id: {
+  roleid: {
     type: String,
-    unique: true,
   },
   password: {
     type: String,
@@ -18,16 +16,19 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true
   },
   name: {
     type: String,
-    required: true
+    required: true,
   },
   role: {
     type: String,
     enum: ['admin', 'staff', 'student'],
     default: 'student'
+  },
+  id: {
+    type: mongoose.Schema.Types.UUID,
+    default: mongoose.Types.UUID.generate,
   }
 });
 
