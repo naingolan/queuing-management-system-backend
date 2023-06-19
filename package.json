@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "africastalking": "^0.6.2",
+    "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
