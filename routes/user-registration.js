@@ -9,20 +9,18 @@ const authMiddleware = require('../middleware/auth');
 // User registration route
 router.post('/register', async (req, res) => {
   try {
-    const { username, name,  email, password, role } = req.body;
-
+    const { name,  email, registrationId, password, role } = req.body;
     // Check if the username or email already exists in the database
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingUser = await User.findOne({ $or: [{ registrationId }, { email }] });
     if (existingUser) {
-      return res.status(400).json({ error: 'Username or email already exists' });
+      return res.status(400).json({ error: 'Registration ID or email already exists' });
     }
     console.log(req.body);
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
     // Create a new user with the default role of "student"
     const user = new User({
-      username,
+      registrationId,
       name,
       email,
       password: hashedPassword,
@@ -31,18 +29,29 @@ router.post('/register', async (req, res) => {
 
     // Save the user to the database
     await user.save();
+    const token = jwt.sign({ userId: User.id, role: User.role }, config.jwtSecret);
 
-    res.status(201).json({ message: 'User registered successfully' });
+    //res.status(201).json({ message: 'User registered successfully', userId: user.id, token });
+
+    res.status(201).json({
+      token,
+      userId: user.id,
+      userRole: user.role,
+      registrationId: user.registrationId,
+      userName: user.name,
+      userEmail: user.email,
+    });
+
   } catch (error) {
     console.error('Error registering user:', error);
     res.status(500).json({ error: 'An error occurred while registering the user' });
   }
 });
 router.post('/login', async (req, res) => {
-  const { username, email, password } = req.body;
+  const { registrationId, email, password } = req.body;
 
   // Check if username or email is provided
-  if (!username && !email) {
+  if (!registrationId && !email) {
     return res.status(400).json({ error: 'Please provide a username or email' });
   }
 
@@ -50,8 +59,8 @@ router.post('/login', async (req, res) => {
     let user;
 
     // Check if username is provided and find the user by username
-    if (username) {
-      user = await User.findOne({ username });
+    if (email) {
+      user = await User.findOne({ email });
     }
 
     // If user is not found and email is provided, find the user by email
