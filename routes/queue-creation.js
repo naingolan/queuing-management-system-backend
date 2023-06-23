@@ -89,7 +89,7 @@ router.get('/all', async (req, res) => {
 });
 
 // Get a queue by ID
-router.get('/queues/:id', authMiddleware, async (req, res) => {
+router.get('/queues/:id',  async (req, res) => {
   try {
     // Find the queue by ID
     const queue = await Queue.findById(req.params.id);

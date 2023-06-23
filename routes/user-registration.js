@@ -80,10 +80,18 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate a JWT token and send it to the client
-    console.log(user.role)
-    const token = jwt.sign({ userId: user._id, role: user.role }, config.jwtSecret);
 
-    return res.status(200).json({ token });
+    token = jwt.sign({ userId: User.id, role: User.role }, config.jwtSecret);
+
+    res.status(200).json({
+      token,
+      userId: user.id,
+      userRole: user.role,
+      registrationId: user.registrationId,
+      userName: user.name,
+      userEmail: user.email,
+    });
+
   } catch (error) {
     console.error('Error during login:', error);
     return res.status(500).json({ error: 'An error occurred during login' });
