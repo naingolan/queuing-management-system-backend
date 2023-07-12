@@ -4,21 +4,24 @@ const authMiddleware = require('../middleware/auth');
 const Queue = require('../models/queue');
 
 // Create a new queue
-router.post('/add', authMiddleware("staff"), async (req, res) => {
+router.post('/add', async (req, res) => {
   try {
-    if (req.user.role !== 'staff') {
-      return res.status(403).json({ error: 'Only staff members can create queues' });
-    }
+    // if (req.user.role !== 'staff') {
+    //   return res.status(403).json({ error: 'Only staff members can create queues' });
+    // }
     // Extract the necessary data from the request body
-    const { name, description } = req.body;
+    const { name, description, location, openingTime, closingTime, queueType, creatorId} = req.body;
 
     // Create a new queue object
     const queue = new Queue({
       name,
       description,
       status: 'open',
-      creator: req.user.userId,
-      students: []
+      creator: creatorId,
+      students: [],
+      location,
+      openingTime,
+      closingTime
     });
 
     // Save the new queue in the database
@@ -75,6 +78,9 @@ router.put('/update/:id', authMiddleware, async (req, res) => {
   }
 });
 
+
+
+
 //Get all queues 
 router.get('/all', async (req, res) => {
   try {
@@ -104,5 +110,18 @@ router.get('/queues/:id',  async (req, res) => {
     res.status(500).json({ error: 'An error occurred while retrieving the queue' });
   }
 });
+
+
+// Fetch queues created by a user
+router.get('/created/:userId', async (req, res) => {
+  try {
+    const queues = await Queue.find({ creator: req.params.userId });
+    res.status(200).json(queues);
+  } catch (error) {
+    console.error('Error fetching queues:', error);
+    res.status(500).json({ error: 'An error occurred while fetching queues' });
+  }
+});
+
 
 module.exports = router;

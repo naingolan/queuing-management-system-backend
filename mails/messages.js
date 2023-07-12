@@ -29,8 +29,11 @@ function sendSMS(recipient, message) {
     });
 }
 
-// Usage example
-const recipientNumber = '+255758224960'; 
-const message = 'Thank you for subscribing to IFM-Queiuing Management System, you will be informed when your turn is near.'; 
+// // Usage example
+// const recipientNumber = '+255758224960'; 
+// const message = 'Thank you for subscribing to IFM-Queiuing Management System, you will be informed when your turn is near.'; 
 
-sendSMS(recipientNumber, message);
+// sendSMS(recipientNumber, message);
+
+
+module.exports = { sendSMS };

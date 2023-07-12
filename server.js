@@ -10,6 +10,7 @@ const corsOptions ={
 const userRoutes = require('./routes/user-registration');
 const queueCreationRoutes = require('./routes/queue-creation');
 const queueJoiningRoutes = require('./routes/queue-joining');
+const queueNotifications = require('./routes/queue-notifications');
 
 const app = express();
 app.use(cors(corsOptions)) 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes); 
 app.use('/api/queues', queueCreationRoutes); 
 app.use('/api/queues', queueJoiningRoutes);
+app.use('/api/queues', queueNotifications);
 
 // Start the server
 const port = 3000;

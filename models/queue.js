@@ -24,6 +24,14 @@ const queueSchema = new mongoose.Schema({
         ref: 'User',
         required: true
       },
+      studentName:{
+        type: String,
+        required: true
+      },
+      registrationId: {
+        type: String,
+        
+      },
       joiningTime: {
         type: Date,
         default: Date.now
@@ -41,10 +49,19 @@ const queueSchema = new mongoose.Schema({
         default: () => Math.random().toString(36).substr(2, 8) // Generate a random coupon
       }
     }],
-    kind: {
+    queueType: {
       type: String,
-      enum: ['specified', 'custom'],
-      default: 'specified'
+      enum: ['specified', 'open'],
+      default: 'open'
+    },
+    openingTime: {
+      type: Date,
+    },
+    closingTime: {
+      type: Date,
+    },
+    location: {
+      type: String,
     }
   });
 

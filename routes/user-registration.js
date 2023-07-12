@@ -29,13 +29,13 @@ router.post('/register', async (req, res) => {
 
     // Save the user to the database
     await user.save();
-    const token = jwt.sign({ userId: User.id, role: User.role }, config.jwtSecret);
+    const token = jwt.sign({ userId: User._id, role: User.role }, config.jwtSecret);
 
     //res.status(201).json({ message: 'User registered successfully', userId: user.id, token });
 
     res.status(201).json({
       token,
-      userId: user.id,
+      userId: user._id,
       userRole: user.role,
       registrationId: user.registrationId,
       userName: user.name,
@@ -85,7 +85,7 @@ router.post('/login', async (req, res) => {
 
     res.status(200).json({
       token,
-      userId: user.id,
+      userId: user._id,
       userRole: user.role,
       registrationId: user.registrationId,
       userName: user.name,
@@ -97,4 +97,32 @@ router.post('/login', async (req, res) => {
     return res.status(500).json({ error: 'An error occurred during login' });
   }
 });
+
+//Get user data
+router.get('/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    console.log(userId)
+    // Find the user by the provided userId
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return the user data
+    res.status(200).json({
+      userId: user.id,
+      userRole: user.role,
+      registrationId: user.registrationId,
+      userName: user.name,
+      userEmail: user.email,
+    });
+    console.log(user);
+  } catch (error) {
+    console.error('Error retrieving user data:', error);
+    return res.status(500).json({ error: 'An error occurred while retrieving user data' });
+  }
+});
+
 module.exports = router;
