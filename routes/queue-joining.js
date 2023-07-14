@@ -23,6 +23,7 @@ router.post('/add/:queueId/specified', async (req, res) => {
     // Add each student to the specifiedQueue array
     students.forEach(student => {
       const { Name, Email, RegistrationNumber } = student;
+      console.log(RegistrationNumber)
       const specifiedStudent = {
         studentName: Name,
         studentEmail: Email,
@@ -282,7 +283,8 @@ function notifyStudentAtPosition(position, queue, waitingStudents) {
       position: position,
       queueName: queue.name
     };
-    sendQueueStatusEmail(email, subjectContent, templateData);
+    const subjectContent = 'Your turn is approaching';
+    sendQueueStatusEmail(email, 'Your turn is approaching', templateData);
   }
 }
 
