@@ -6,6 +6,41 @@ const User = require('../models/user');
 const { sendQueueStatusEmail } = require('../mails/email');
 const { sendSMS } = require('../mails/messages');
 
+
+// Route: Add data to specified queue
+router.post('/add/:queueId/specified', async (req, res) => {
+  const { queueId } = req.params;
+  const students = req.body;
+
+  try {
+    // Find the queue by ID
+    const queue = await Queue.findById(queueId);
+
+    if (!queue) {
+      return res.status(404).json({ message: 'Queue not found' });
+    }
+
+    // Add each student to the specifiedQueue array
+    students.forEach(student => {
+      const { Name, Email, RegistrationNumber } = student;
+      const specifiedStudent = {
+        studentName: Name,
+        studentEmail: Email,
+        registrationId: RegistrationNumber,
+      };
+      queue.specifiedQueue.push(specifiedStudent);
+    });
+
+    // Save the updated queue
+    await queue.save();
+
+    res.status(200).json({ message: 'Specified students added successfully' });
+  } catch (error) {
+    console.log('Error adding specified students:', error);
+    res.status(500).json({ message: 'An error occurred' });
+  }
+});
+
 // Student joins a queue
 router.post('/add/:queueId/join/:studentId',  async (req, res) => {
   try {
@@ -189,6 +224,7 @@ router.post('/move-down/:queueId/:studentId/:positions',  async (req, res) => {
   }
 });
 
+//
 
 
 // Update a queue
@@ -226,5 +262,101 @@ router.get('/queues',  async (req, res) => {
     res.status(500).json({ error: 'An error occurred while getting the queues' });
   }
 });
+
+// Function to notify student at a specific position
+function notifyStudentAtPosition(position, queue, waitingStudents) {
+  if (position <= waitingStudents.length) {
+    const student = waitingStudents[position - 1];
+    const recipient = "+255758224960";
+    const message = `Hi ${student.name}, you are number ${position} in the queue. Please get ready.`;
+    sendSMS(recipient, message);
+
+    const email = "kelvinsdechaw@gmail.com";
+    if(position == 1){
+      const subjectContent = 'Your turn is now!!';
+    }else{
+    const subjectContent = 'Your turn is approaching';
+    }
+    const templateData = {
+      name: student.name,
+      position: position,
+      queueName: queue.name
+    };
+    sendQueueStatusEmail(email, subjectContent, templateData);
+  }
+}
+
+// Usage example
+router.patch('/:queueId/students/:studentId', async (req, res) => {
+  try {
+    const { queueId, studentId } = req.params;
+
+    // Find the queue by ID
+    const queue = await Queue.findById(queueId);
+
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+
+    // Find the student in the queue by ID
+    const student = queue.students.find(student => student._id.toString() === studentId);
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Update the student's status to "served"
+    student.status = 'served';
+    student.servedAt = new Date();
+
+    // Save the updated queue
+    const updatedQueue = await queue.save();
+
+    // Get the students with the status of "waiting"
+    const waitingStudents = queue.students.filter(student => student.status === 'waiting');
+
+    // Notify student at position 3
+    notifyStudentAtPosition(3, queue, waitingStudents);
+
+    // Notify student at position 5
+    notifyStudentAtPosition(5, queue, waitingStudents);
+
+    // Notify student at position 10
+    notifyStudentAtPosition(10, queue, waitingStudents);
+
+    res.status(200).json(updatedQueue);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'An error occurred while updating the student status' });
+  }
+});
+
+router.patch('/close-queue/:queueId', async (req, res) => {
+  try {
+    const { queueId } = req.params;
+    const { description, status } = req.body;
+
+    // Find the queue by ID
+    const queue = await Queue.findById(queueId);
+
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+
+    // Update the queue's description and status
+    queue.additionalDesc = description;
+    if(status == "closed")
+    queue.status = status;
+
+    // Save the updated queue
+    const updatedQueue = await queue.save();
+
+    res.status(200).json(updatedQueue);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'An error occurred while closing the queue' });
+  }
+});
+
 
 module.exports = router;

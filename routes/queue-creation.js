@@ -3,16 +3,22 @@ const router = express.Router();
 const authMiddleware = require('../middleware/auth');
 const Queue = require('../models/queue');
 
-// Create a new queue
 router.post('/add', async (req, res) => {
   try {
-    // if (req.user.role !== 'staff') {
-    //   return res.status(403).json({ error: 'Only staff members can create queues' });
-    // }
-    // Extract the necessary data from the request body
-    const { name, description, location, openingTime, closingTime, queueType, creatorId} = req.body;
+    const { name, description, location, openingTime, closingTime, queueType, creatorId } = req.body;
 
-    // Create a new queue object
+    // Convert openingTime and closingTime strings to Date objects
+    const openingTimeParts = openingTime.split(":");
+    const closingTimeParts = closingTime.split(":");
+    const openingTimeDate = new Date();
+    const closingTimeDate = new Date();
+
+    openingTimeDate.setHours(parseInt(openingTimeParts[0]));
+    openingTimeDate.setMinutes(parseInt(openingTimeParts[1]));
+    closingTimeDate.setHours(parseInt(closingTimeParts[0]));
+    closingTimeDate.setMinutes(parseInt(closingTimeParts[1]));
+
+    // Create a new queue object with the updated Date objects
     const queue = new Queue({
       name,
       description,
@@ -20,8 +26,9 @@ router.post('/add', async (req, res) => {
       creator: creatorId,
       students: [],
       location,
-      openingTime,
-      closingTime
+      openingTime: openingTimeDate,
+      closingTime: closingTimeDate,
+      queueType: queueType
     });
 
     // Save the new queue in the database
@@ -33,7 +40,6 @@ router.post('/add', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while creating the queue' });
   }
 });
-
 // Delete a queue
 router.delete('/delete/:id', authMiddleware, async (req, res) => {
   try {
