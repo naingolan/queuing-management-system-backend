@@ -30,14 +30,16 @@ router.post('/upload', upload.single('excelFile'), async (req, res) => {
     const specifiedQueue = [];
 
     for (const row of rows) {
-      const registrationId = row.getCell(1).value;
-      const studentName = row.getCell(2).value;
+      const registrationId = row.getCell(2).value;
+      const studentName = row.getCell(1).value;
       const studentEmail = row.getCell(3).value;
+      const phoneNumber = row.getCell(4).value;
 
       specifiedQueue.push({
         registrationId,
         studentName,
         studentEmail,
+        studentPhone: phoneNumber,
         status: 'pending'
       });
     }

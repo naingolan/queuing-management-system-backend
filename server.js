@@ -12,6 +12,7 @@ const queueCreationRoutes = require('./routes/queue-creation');
 const queueJoiningRoutes = require('./routes/queue-joining');
 const queueNotifications = require('./routes/queue-notifications');
 const queueSpecified = require('./routes/queue-specified');
+const chats = require('./routes/chats');
 
 const app = express();
 app.use(cors(corsOptions)) 
@@ -23,6 +24,7 @@ app.use('/api/queues', queueCreationRoutes);
 app.use('/api/queues', queueJoiningRoutes);
 app.use('/api/queues', queueNotifications);
 app.use('/api/queues', queueSpecified);
+app.use('/api/queues', chats);
 // Start the server
 const port = 3000;
 app.listen(port, () => {

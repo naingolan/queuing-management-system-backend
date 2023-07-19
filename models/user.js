@@ -23,10 +23,13 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'staff', 'student'],
     default: 'student'
   },
-  id: {
-    type: mongoose.Schema.Types.UUID,
-    default: mongoose.Types.UUID.generate,
+
+  status: {
+    type: String,
+    enum: ['active', 'inactive'],
+    default: 'active'
   }
+
 });
 
 const User = mongoose.model('User', userSchema);

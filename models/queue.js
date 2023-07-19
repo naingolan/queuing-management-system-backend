@@ -111,6 +111,42 @@ const queueSchema = new mongoose.Schema({
         servedAt: {
           type: Date,
         },
+        phoneNumber: {
+          type: String,
+        },
+      }
+    ],
+    chats: [
+      {
+        sender:{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: false,
+        },
+        content: {
+          type: String,
+        },
+        time: {
+          type: Date,
+          default: Date.now
+        },
+        receiver: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      }
+    ],
+
+    patners:[
+      {
+        patnerId:{
+          ref: 'User',
+          type: mongoose.Schema.Types.ObjectId,
+        },
+        patnerScore:{
+          type: Number,
+          default: 0
+        },
       }
     ]
     

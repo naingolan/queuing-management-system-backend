@@ -288,7 +288,6 @@ function notifyStudentAtPosition(position, queue, waitingStudents) {
   }
 }
 
-// Usage example
 router.patch('/:queueId/students/:studentId', async (req, res) => {
   try {
     const { queueId, studentId } = req.params;
@@ -300,11 +299,16 @@ router.patch('/:queueId/students/:studentId', async (req, res) => {
       return res.status(404).json({ error: 'Queue not found' });
     }
 
-    // Find the student in the queue by ID
-    const student = queue.students.find(student => student._id.toString() === studentId);
+    // Find the student in the queue's students array
+    let student = queue.students.find(student => student._id.toString() === studentId);
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      // Find the student in the queue's specifiedQueue array
+      student = queue.specifiedQueue.find(student => student._id.toString() === studentId);
+
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
     }
 
     // Update the student's status to "served"
@@ -333,6 +337,7 @@ router.patch('/:queueId/students/:studentId', async (req, res) => {
   }
 });
 
+
 router.patch('/close-queue/:queueId', async (req, res) => {
   try {
     const { queueId } = req.params;
@@ -360,5 +365,80 @@ router.patch('/close-queue/:queueId', async (req, res) => {
   }
 });
 
+
+// Route to fetch all queues with details and total number of students joined
+router.get('/queues', async (req, res) => {
+  try {
+    const queues = await Queue.find().populate('creator').populate('students.studentId');
+    
+    const queuesWithDetails = queues.map(queue => {
+      const totalStudents = queue.students.length;
+      return {
+        _id: queue._id,
+        name: queue.name,
+        description: queue.description,
+        additionalDesc: queue.additionalDesc,
+        status: queue.status,
+        creator: queue.creator,
+        totalStudents,
+      };
+    });
+
+    res.json(queuesWithDetails);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the queue by ID
+    const queue = await Queue.findById(id);
+
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+
+    // Delete the queue
+    await queue.deleteOne();
+
+    res.status(200).json({ message: 'Queue deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while deleting the queue' });
+  }
+});
+
+router.patch('/change-status/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Find the queue by ID
+    const queue = await Queue.findById(id);
+
+    if (!queue) {
+      return res.status(404).json({ error: 'Queue not found' });
+    }
+
+    // Update the queue's status
+    if(queue.status == "closed"){
+      queue.status = "open";
+    }else{
+      queue.status = "closed";
+    }
+
+    // Save the updated queue
+    const updatedQueue = await queue.save();
+
+    res.status(200).json(updatedQueue);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while updating the queue status' });
+  }
+});
 
 module.exports = router;
